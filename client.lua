@@ -26,7 +26,6 @@ local radioStations = {
 local isRadioUIOpen = false
 local isYouTubePlaying = false
 local isYouTubePaused = false
-local vehicleRadioPosition = nil
 
 function toggleRadioUI()
     local playerPed = PlayerPedId()
@@ -76,12 +75,8 @@ end)
 -- Handles URL input (YouTube)
 RegisterNUICallback('playYouTube', function(data, cb)
     local youtubeUrl = data.url
-    local playerPed = PlayerPedId()
-    local vehicle = GetVehiclePedIsIn(playerPed, false)
-    local coords = GetEntityCoords(vehicle)
-    vehicleRadioPosition = coords
-    SetVehRadioStation(vehicle, "OFF")
-    exports.xsound:PlayUrlPos('radio', youtubeUrl, 0.5, coords, false)
+    SetVehRadioStation(GetVehiclePedIsIn(PlayerPedId(), false), "OFF")
+    exports.xsound:PlayUrl('radio', youtubeUrl, 0.5, false)
     exports.xsound:Distance('radio', 10)
     isYouTubePlaying = true
     isYouTubePaused = false
@@ -151,21 +146,6 @@ Citizen.CreateThread(function()
             end
         else
             stopYouTubePlayback()
-        end
-    end
-end)
-
--- Make sound follow the vehicle
-Citizen.CreateThread(function()
-    while true do
-        Citizen.Wait(100) -- Update every 100ms
-        if isYouTubePlaying or isYouTubePaused then
-            local playerPed = PlayerPedId()
-            if IsPedInAnyVehicle(playerPed, false) then
-                local vehicle = GetVehiclePedIsIn(playerPed, false)
-                local coords = GetEntityCoords(vehicle)
-                exports.xsound:Position('radio', coords)
-            end
         end
     end
 end)
