@@ -72,21 +72,41 @@ RegisterNUICallback('selectRadioStation', function(data, cb)
     cb('ok')
 end)
 
+-- Retrieve all vehicle passengers
+local function getVehiclePassengers(vehicle)
+    local passengers = {}
+    for i = -1, GetVehicleMaxNumberOfPassengers(vehicle) - 1 do
+        local ped = GetPedInVehicleSeat(vehicle, i)
+        if ped and ped ~= 0 then
+            table.insert(passengers, GetPlayerServerId(NetworkGetPlayerIndexFromPed(ped)))
+        end
+    end
+    return passengers
+end
+
 -- Handles URL input (YouTube)
 RegisterNUICallback('playYouTube', function(data, cb)
     local youtubeUrl = data.url
-    SetVehRadioStation(GetVehiclePedIsIn(PlayerPedId(), false), "OFF")
-    exports.xsound:PlayUrl('radio', youtubeUrl, 0.5, false)
+    local volume = 0.5
+    local vehicle = GetVehiclePedIsIn(PlayerPedId(), false)
+    local passengers = getVehiclePassengers(vehicle)
+    
+    SetVehRadioStation(vehicle, "OFF")
+    exports.xsound:PlayUrl('radio', youtubeUrl, volume, false)
     exports.xsound:Distance('radio', 10)
     isYouTubePlaying = true
     isYouTubePaused = false
     SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = true, isYouTubePaused = false })
     toggleRadioUI()
     cb('ok')
+    TriggerServerEvent('syncYouTubePlayback', youtubeUrl, volume, passengers)
 end)
 
 -- YouTube playback handler
 RegisterNUICallback('pauseYouTube', function(data, cb)
+    local vehicle = GetVehiclePedIsIn(PlayerPedId(), false)
+    local passengers = getVehiclePassengers(vehicle)
+    
     if isYouTubePlaying then
         exports.xsound:Pause('radio')
         isYouTubePlaying = false
@@ -98,6 +118,30 @@ RegisterNUICallback('pauseYouTube', function(data, cb)
     end
     SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = isYouTubePlaying, isYouTubePaused = isYouTubePaused })
     cb('ok')
+    TriggerServerEvent('syncYouTubePlaybackState', isYouTubePlaying, isYouTubePaused, passengers)
+end)
+
+-- Play YouTube for all passengers
+RegisterNetEvent('playYouTubeForAll')
+AddEventHandler('playYouTubeForAll', function(youtubeUrl, volume)
+    exports.xsound:PlayUrl('radio', youtubeUrl, volume, false)
+    exports.xsound:Distance('radio', 10)
+    isYouTubePlaying = true
+    isYouTubePaused = false
+    SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = true, isYouTubePaused = false })
+end)
+
+-- Update YouTube for all passengers
+RegisterNetEvent('updateYouTubePlaybackStateForAll')
+AddEventHandler('updateYouTubePlaybackStateForAll', function(isPlaying, isPaused)
+    if isPlaying then
+        exports.xsound:Resume('radio')
+    else
+        exports.xsound:Pause('radio')
+    end
+    isYouTubePlaying = isPlaying
+    isYouTubePaused = isPaused
+    SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = isYouTubePlaying, isYouTubePaused = isYouTubePaused })
 end)
 
 -- Volume control
