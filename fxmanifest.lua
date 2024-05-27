@@ -8,7 +8,9 @@ version '0.1'
 ui_page 'html/ui.html'
 
 files {
-    'html/ui.html'
+    'html/ui.html',
+    'html/styles.css',
+    'html/images/*.png'
 }
 
 client_scripts {
