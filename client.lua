@@ -39,6 +39,7 @@ function toggleRadioUI()
         SendNUIMessage({ action = "closeRadioUI" })
     else
         SetNuiFocus(true, true)
+        SetNuiFocusKeepInput(true)
         SendNUIMessage({
             action = "openRadioUI",
             stations = radioStations,
@@ -190,6 +191,17 @@ Citizen.CreateThread(function()
             end
         else
             stopYouTubePlayback()
+        end
+    end
+end)
+
+-- Disable mouse when in Radio UI
+Citizen.CreateThread(function()
+    while true do
+        Citizen.Wait(0)
+        if isRadioUIOpen then
+            DisableControlAction(0, 1, true) -- LookLeftRight
+            DisableControlAction(0, 2, true) -- LookUpDown
         end
     end
 end)
