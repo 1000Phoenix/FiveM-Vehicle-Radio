@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Radio UI</title>
     <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div class="radio-panel">
@@ -19,9 +20,9 @@
         <div class="radio-button" onclick="selectRadioStation('RADIO_09_HIPHOP_OLD')"><img src="images/RADIO_09_HIPHOP_OLD.png" alt="West Coast Classics"></div>
         <div class="radio-button" onclick="selectRadioStation('RADIO_12_REGGAE')"><img src="images/RADIO_12_REGGAE.png" alt="Blue Ark"></div>
         <div class="radio-button" onclick="selectRadioStation('RADIO_13_JAZZ')"><img src="images/RADIO_13_JAZZ.png" alt="WorldWide FM"></div>
-        <div class="special-button" onclick="playYouTube()"><button id="play-restart-button">Play/Restart</button></div>
-        <div class="special-button"><input type="text" placeholder="YouTube URL" id="youtube-url"><button onclick="playYouTube()">Play</button></div>
-        <div class="special-button" onclick="pauseYouTube()"><button id="pause-resume-button">Pause/Resume</button></div>
+        <div class="special-button" onclick="playYouTube()"><button id="play-restart-button" title="Play/Restart"><i class="fas fa-play"></i></button></div>
+        <div class="special-button"><input type="text" placeholder="YouTube URL" id="youtube-url"><button onclick="playYouTube()" title="Play YouTube"><i class="fas fa-play"></i></button></div>
+        <div class="special-button" onclick="pauseYouTube()"><button id="pause-resume-button" title="Pause/Resume"><i class="fas fa-pause"></i></button></div>
         <div class="radio-button" onclick="selectRadioStation('RADIO_14_DANCE_02')"><img src="images/RADIO_14_DANCE_02.png" alt="FlyLo FM"></div>
         <div class="radio-button" onclick="selectRadioStation('RADIO_15_MOTOWN')"><img src="images/RADIO_15_MOTOWN.png" alt="The Lowdown 91.1"></div>
         <div class="radio-button" onclick="selectRadioStation('RADIO_20_THELAB')"><img src="images/RADIO_20_THELAB.png" alt="The Lab"></div>
@@ -93,14 +94,14 @@
             const pauseResumeButton = document.getElementById('pause-resume-button');
 
             if (isPlaying) {
-                playRestartButton.textContent = 'Restart';
-                pauseResumeButton.textContent = 'Pause';
+                playRestartButton.innerHTML = '<i class="fas fa-redo"></i>';
+                pauseResumeButton.innerHTML = '<i class="fas fa-pause"></i>';
             } else if (isPaused) {
-                playRestartButton.textContent = 'Restart';
-                pauseResumeButton.textContent = 'Resume';
+                playRestartButton.innerHTML = '<i class="fas fa-redo"></i>';
+                pauseResumeButton.innerHTML = '<i class="fas fa-play"></i>';
             } else {
-                playRestartButton.textContent = 'Play';
-                pauseResumeButton.textContent = 'Pause';
+                playRestartButton.innerHTML = '<i class="fas fa-play"></i>';
+                pauseResumeButton.innerHTML = '<i class="fas fa-pause"></i>';
             }
         }
     </script>
