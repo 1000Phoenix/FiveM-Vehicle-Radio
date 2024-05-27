@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Radio UI</title>
+    <style>
+        #radioUI {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid black;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        #closeButton {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: red;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+        #stationList button {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #stationList button:hover {
+            background-color: #0056b3;
+        }
+        #youtubeControls {
+            margin-top: 20px;
+        }
+        #youtubeControls input, #youtubeControls button {
+            display: block;
+            width: 100%;
+            margin: 5px 0;
+            padding: 10px;
+        }
+        #youtubeControls button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        #youtubeControls button:hover {
+            background-color: #218838;
+        }
+        #volumeControl {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="radioUI">
+        <button id="closeButton" onclick="closeRadioUI()">Close</button>
+        <h1>Select a Radio Station</h1>
+        <div id="stationList"></div>
+        <div id="youtubeControls">
+            <h2>Or play from YouTube</h2>
+            <input type="text" id="youtubeUrl" placeholder="Enter YouTube URL">
+            <button id="playButton" onclick="playYouTube()">Play</button>
+            <button id="pauseButton" onclick="pauseYouTube()">Pause</button>
+        </div>
+        <div id="volumeControl">
+            <h2>Volume Control</h2>
+            <input type="range" id="volumeSlider" min="0" max="1" step="0.01" value="0.5" oninput="setVolume(this.value)">
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('message', function(event) {
+            if (event.data.action === 'openRadioUI') {
+                document.getElementById('radioUI').style.display = 'block';
+                const stationList = document.getElementById('stationList');
+                stationList.innerHTML = '';
+                event.data.stations.forEach(station => {
+                    const button = document.createElement('button');
+                    button.textContent = station.name;
+                    button.onclick = () => selectRadioStation(station.station);
+                    stationList.appendChild(button);
+                });
+                updatePlaybackButtons(event.data.isYouTubePlaying, event.data.isYouTubePaused);
+            } else if (event.data.action === 'closeRadioUI') {
+                document.getElementById('radioUI').style.display = 'none';
+            } else if (event.data.action === 'updatePlaybackState') {
+                updatePlaybackButtons(event.data.isYouTubePlaying, event.data.isYouTubePaused);
+            }
+        });
+
+        function updatePlaybackButtons(isPlaying, isPaused) {
+            const playButton = document.getElementById('playButton');
+            const pauseButton = document.getElementById('pauseButton');
+            if (isPlaying) {
+                playButton.textContent = 'Restart';
+                pauseButton.textContent = 'Pause';
+                pauseButton.style.display = 'block';
+            } else if (isPaused) {
+                playButton.textContent = 'Restart';
+                pauseButton.textContent = 'Resume';
+                pauseButton.style.display = 'block';
+            } else {
+                playButton.textContent = 'Play';
+                pauseButton.style.display = 'none';
+            }
+        }
+
+        function selectRadioStation(station) {
+            fetch(`https://${GetParentResourceName()}/selectRadioStation`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ station })
+            });
+        }
+
+        function playYouTube() {
+            const url = document.getElementById('youtubeUrl').value;
+            fetch(`https://${GetParentResourceName()}/playYouTube`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ url })
+            });
+        }
+
+        function pauseYouTube() {
+            fetch(`https://${GetParentResourceName()}/pauseYouTube`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        }
+
+        function setVolume(volume) {
+            fetch(`https://${GetParentResourceName()}/setVolume`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ volume })
+            });
+        }
+
+        function closeRadioUI() {
+            fetch(`https://${GetParentResourceName()}/closeRadioUI`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            });
+        }
+
+       /*  document.addEventListener('keydown', function(event) {
+            if (event.key === 'q' || event.key === 'Q') {
+                fetch(`https://${GetParentResourceName()}/keyPress`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ control: 85 }) // INPUT_VEH_RADIO_WHEEL
+                });
+            }
+        }); */
+    </script>
+</body>
+</html>
