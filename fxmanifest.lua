@@ -3,7 +3,7 @@ game 'gta5'
 
 author 'Phoenix'
 description 'A customisable radio script to replace the default radial wheel!'
-version '0.1'
+version '0.5'
 
 ui_page 'html/ui.html'
 

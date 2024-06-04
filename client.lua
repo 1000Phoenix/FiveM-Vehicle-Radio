@@ -1,5 +1,31 @@
+local radioStationNames = {
+    RADIO_01_CLASS_ROCK = "Los Santos Rock Radio",
+    RADIO_02_POP = "Non-Stop-Pop FM",
+    RADIO_03_HIPHOP_NEW = "Radio Los Santos",
+    RADIO_04_PUNK = "Channel X",
+    RADIO_05_TALK_01 = "West Coast Talk Radio",
+    RADIO_06_COUNTRY = "Rebel Radio",
+    RADIO_07_DANCE_01 = "Soulwax FM",
+    RADIO_08_MEXICAN = "East Los FM",
+    RADIO_09_HIPHOP_OLD = "West Coast Classics",
+    RADIO_12_REGGAE = "Blue Ark",
+    RADIO_13_JAZZ = "WorldWide FM",
+    RADIO_14_DANCE_02 = "FlyLo FM",
+    RADIO_15_MOTOWN = "The Lowdown 91.1",
+    RADIO_20_THELAB = "The Lab",
+    RADIO_16_SILVERLAKE = "Radio Mirror Park",
+    RADIO_17_FUNK = "Space 103.2",
+    RADIO_18_90S_ROCK = "Vinewood Boulevard Radio",
+    RADIO_21_DLC_XM17 = "Blonded Los Santos 97.8 FM",
+    RADIO_11_TALK_02 = "Blaine County Radio",
+    RADIO_22_DLC_BATTLE_MIX1_RADIO = "Los Santos Underground Radio",
+    RADIO_23_DLC_XM19_RADIO = "iFruit Radio",
+    RADIO_CUSTOM = "Radio Custom"
+}
+
 local isYouTubePlaying = false
 local isYouTubePaused = false
+local currentSong = "No song playing"
 
 function toggleRadioUI()
     local playerPed = PlayerPedId()
@@ -18,7 +44,8 @@ function toggleRadioUI()
             action = "openRadioUI",
             stations = radioStations,
             isYouTubePlaying = isYouTubePlaying,
-            isYouTubePaused = isYouTubePaused
+            isYouTubePaused = isYouTubePaused,
+            currentSong = currentSong
         })
     end
     isRadioUIOpen = not isRadioUIOpen
@@ -29,7 +56,8 @@ function stopYouTubePlayback()
         exports.xsound:Destroy('radio')
         isYouTubePlaying = false
         isYouTubePaused = false
-        SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = false, isYouTubePaused = false })
+        currentSong = "No song playing"
+        SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = false, isYouTubePaused = false, currentSong = currentSong })
     end
 end
 
@@ -40,9 +68,12 @@ RegisterNUICallback('selectRadioStation', function(data, cb)
     end
     if station == "OFF" then
         SetVehRadioStation(GetVehiclePedIsIn(PlayerPedId(), false), "OFF")
+        currentSong = "No song playing"
     else
         SetVehRadioStation(GetVehiclePedIsIn(PlayerPedId(), false), station)
+        currentSong = radioStationNames[station] or station
     end
+    SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = isYouTubePlaying, isYouTubePaused = isYouTubePaused, currentSong = currentSong })
     toggleRadioUI()
     cb('ok')
 end)
@@ -71,7 +102,8 @@ RegisterNUICallback('playYouTube', function(data, cb)
     exports.xsound:Distance('radio', 10)
     isYouTubePlaying = true
     isYouTubePaused = false
-    SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = true, isYouTubePaused = false })
+    currentSong = "Loading..."
+    SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = true, isYouTubePaused = false, currentSong = currentSong })
     toggleRadioUI()
     cb('ok')
     TriggerServerEvent('syncYouTubePlayback', youtubeUrl, volume, passengers)
@@ -86,24 +118,31 @@ RegisterNUICallback('pauseYouTube', function(data, cb)
         exports.xsound:Pause('radio')
         isYouTubePlaying = false
         isYouTubePaused = true
+        SetVehRadioStation(vehicle, "OFF")
     elseif isYouTubePaused then
         exports.xsound:Resume('radio')
         isYouTubePlaying = true
         isYouTubePaused = false
+        SetVehRadioStation(vehicle, "OFF")
+    else
+        SetVehRadioStation(vehicle, "OFF")
+        currentSong = "No song playing"
+        SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = false, isYouTubePaused = false, currentSong = currentSong })
     end
-    SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = isYouTubePlaying, isYouTubePaused = isYouTubePaused })
+    SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = isYouTubePlaying, isYouTubePaused = isYouTubePaused, currentSong = currentSong })
     cb('ok')
     TriggerServerEvent('syncYouTubePlaybackState', isYouTubePlaying, isYouTubePaused, passengers)
 end)
 
 -- Play YouTube for all passengers
 RegisterNetEvent('playYouTubeForAll')
-AddEventHandler('playYouTubeForAll', function(youtubeUrl, volume)
+AddEventHandler('playYouTubeForAll', function(youtubeUrl, volume, title)
     exports.xsound:PlayUrl('radio', youtubeUrl, volume, false)
     exports.xsound:Distance('radio', 10)
     isYouTubePlaying = true
     isYouTubePaused = false
-    SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = true, isYouTubePaused = false })
+    currentSong = "YouTube: " .. title
+    SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = true, isYouTubePaused = false, currentSong = currentSong })
 end)
 
 -- Update YouTube for all passengers
@@ -116,7 +155,7 @@ AddEventHandler('updateYouTubePlaybackStateForAll', function(isPlaying, isPaused
     end
     isYouTubePlaying = isPlaying
     isYouTubePaused = isPaused
-    SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = isYouTubePlaying, isYouTubePaused = isYouTubePaused })
+    SendNUIMessage({ action = "updatePlaybackState", isYouTubePlaying = isYouTubePlaying, isYouTubePaused = isYouTubePaused, currentSong = currentSong })
 end)
 
 -- Volume control

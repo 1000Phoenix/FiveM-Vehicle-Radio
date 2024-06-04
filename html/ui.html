@@ -24,6 +24,9 @@
             <input type="text" placeholder="YouTube URL" id="youtube-url">
             <button id="play-restart-button" onclick="playYouTube()" title="Play YouTube"><i class="fas fa-play"></i></button>
         </div>
+        <div class="special-button">
+            <div id="current-song" class="current-song">No song playing</div>
+        </div>
         <div class="special-button" onclick="pauseYouTube()"><button id="pause-resume-button" title="Pause/Resume"><i class="fas fa-pause"></i></button></div>
         <div class="radio-button" onclick="selectRadioStation('RADIO_14_DANCE_02')"><img src="images/RADIO_14_DANCE_02.png" alt="FlyLo FM"></div>
         <div class="radio-button" onclick="selectRadioStation('RADIO_15_MOTOWN')"><img src="images/RADIO_15_MOTOWN.png" alt="The Lowdown 91.1"></div>
@@ -79,15 +82,22 @@
             });
         }
 
+        function updateCurrentSong(song) {
+            const currentSongElement = document.getElementById('current-song');
+            currentSongElement.innerHTML = `<span>${song}</span>`;
+        }
+
         window.addEventListener('message', (event) => {
             const data = event.data;
             if (data.action === 'openRadioUI') {
                 document.body.style.display = 'flex';
                 updateButtonStates(data.isYouTubePlaying, data.isYouTubePaused);
+                updateCurrentSong(data.currentSong);
             } else if (data.action === 'closeRadioUI') {
                 document.body.style.display = 'none';
             } else if (data.action === 'updatePlaybackState') {
                 updateButtonStates(data.isYouTubePlaying, data.isYouTubePaused);
+                updateCurrentSong(data.currentSong);
             }
         });
 
