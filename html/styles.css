@@ -91,8 +91,9 @@ body {
     font-size: 16px;
     text-align: center;
     width: 100%;
-    max-height: 60px; /* Adjust height to fit 3 lines */
+    max-height: 80px; /* Increased height to accommodate the new bar */
     display: flex;
+    flex-direction: column; /* Changed to column to stack elements */
     align-items: center;
     justify-content: center;
     padding: 10px;
@@ -101,10 +102,19 @@ body {
     transition: max-height 0.3s ease;
 }
 
+.current-song .source-bar {
+    width: 100%;
+    background-color: rgba(85, 85, 85, 0.8);
+    padding: 5px;
+    font-size: 14px;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
 .current-song span {
     display: -webkit-box;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 3; /* Limit to 3 lines */
+    -webkit-line-clamp: 3;
     overflow: hidden;
     text-overflow: ellipsis;
     width: 100%;
@@ -113,11 +123,11 @@ body {
 }
 
 .current-song:hover {
-    max-height: none; /* Allow container to expand */
+    max-height: none;
 }
 
 .current-song:hover span {
-    -webkit-line-clamp: unset; /* Remove line clamp on hover */
-    white-space: normal; /* Allow text to wrap */
-    height: auto; /* Adjust height to fit content */
+    -webkit-line-clamp: unset;
+    white-space: normal;
+    height: auto;
 }

@@ -25,7 +25,10 @@
             <button id="play-restart-button" onclick="playYouTube()" title="Play YouTube"><i class="fas fa-play"></i></button>
         </div>
         <div class="special-button">
-            <div id="current-song" class="current-song">No song playing</div>
+            <div id="current-song" class="current-song">
+                <div class="source-bar" id="source-bar">No source</div>
+                <span>No song playing</span>
+            </div>
         </div>
         <div class="special-button" onclick="pauseYouTube()"><button id="pause-resume-button" title="Pause/Resume"><i class="fas fa-pause"></i></button></div>
         <div class="radio-button" onclick="selectRadioStation('RADIO_14_DANCE_02')"><img src="images/RADIO_14_DANCE_02.png" alt="FlyLo FM"></div>
@@ -54,13 +57,22 @@
 
         function playYouTube() {
             const url = document.getElementById('youtube-url').value;
-            fetch(`https://${GetParentResourceName()}/playYouTube`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json; charset=UTF-8',
-                },
-                body: JSON.stringify({ url }),
-            });
+            if (isValidYouTubeUrl(url)) {
+                fetch(`https://${GetParentResourceName()}/playYouTube`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json; charset=UTF-8',
+                    },
+                    body: JSON.stringify({ url }),
+                });
+            } else {
+                alert('Invalid YouTube URL');
+            }
+        }
+
+        function isValidYouTubeUrl(url) {
+            const regex = /^(https?\:\/\/)?(www\.youtube\.com|youtu\.?be)\/.+$/;
+            return regex.test(url);
         }
 
         function pauseYouTube() {
@@ -82,9 +94,11 @@
             });
         }
 
-        function updateCurrentSong(song) {
+        function updateCurrentSong(song, source) {
             const currentSongElement = document.getElementById('current-song');
-            currentSongElement.innerHTML = `<span>${song}</span>`;
+            const sourceBarElement = document.getElementById('source-bar');
+            sourceBarElement.innerHTML = source;
+            currentSongElement.querySelector('span').innerHTML = song;
         }
 
         window.addEventListener('message', (event) => {
@@ -92,12 +106,14 @@
             if (data.action === 'openRadioUI') {
                 document.body.style.display = 'flex';
                 updateButtonStates(data.isYouTubePlaying, data.isYouTubePaused);
-                updateCurrentSong(data.currentSong);
+                updateCurrentSong(data.currentSong, data.source);
             } else if (data.action === 'closeRadioUI') {
                 document.body.style.display = 'none';
             } else if (data.action === 'updatePlaybackState') {
                 updateButtonStates(data.isYouTubePlaying, data.isYouTubePaused);
-                updateCurrentSong(data.currentSong);
+                updateCurrentSong(data.currentSong, data.source);
+            } else if (data.action === 'updateCurrentSong') {
+                updateCurrentSong(data.song, data.source);
             }
         });
 
